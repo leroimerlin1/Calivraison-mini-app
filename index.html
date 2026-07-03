@@ -9,13 +9,13 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, orderBy, query, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     const firebaseConfig = {
-      apiKey: "AIzaSyCaNdux3BIM1cI1InFkt2c_N0NOz8QyrRI",
-      authDomain: "haribio-7d576.firebaseapp.com",
-      projectId: "haribio-7d576",
-      storageBucket: "haribio-7d576.firebasestorage.app",
-      messagingSenderId: "311258034136",
-      appId: "1:311258034136:web:a42229900a1c8a326fccad",
-      measurementId: "G-P8JPXSHPMC"
+      apiKey: "AIzaSyBfJnqO4Mb1ow-8s27hqxj1olDiWEVVuR0",
+      authDomain: "calivraison-cd60b.firebaseapp.com",
+      projectId: "calivraison-cd60b",
+      storageBucket: "calivraison-cd60b.firebasestorage.app",
+      messagingSenderId: "236945542072",
+      appId: "1:236945542072:web:85d463eb87179d70e39d4d",
+      measurementId: "G-ZH27GCED20"
     };
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
@@ -33,6 +33,8 @@
       setTimeout(() => {
         if(window.loadAvisFromFirestore) window.loadAvisFromFirestore();
         if(window.initProductsRealtime) window.initProductsRealtime();
+        if(window.initReseauxRealtime) window.initReseauxRealtime();
+        if(window.initInfoCardsRealtime) window.initInfoCardsRealtime();
       }, 300);
     });
   </script>
@@ -417,6 +419,88 @@ textarea{min-height:80px;resize:vertical;}
     <div class="admin-section-title">📦 Produits actuels</div>
     <div id="admin-products-list"></div>
   </div>
+  <div class="admin-section">
+    <button class="admin-add-btn" onclick="openReseauForm(null)">
+      <span>➕</span> Ajouter un lien/réseau
+    </button>
+    <div class="admin-section-title">📡 Page Réseaux</div>
+    <div id="admin-reseaux-list"></div>
+  </div>
+  <div class="admin-section" id="admin-reseau-form-section" style="display:none">
+    <div class="admin-form">
+      <div class="admin-form-title" id="admin-reseau-form-title">✏️ Nouveau lien</div>
+      <input type="hidden" id="rf-edit-key">
+      <div class="admin-field">
+        <label class="admin-label">Nom</label>
+        <input class="admin-input" id="rf-name" placeholder="ex: Notre Telegram">
+      </div>
+      <div class="admin-field">
+        <label class="admin-label">Sous-titre</label>
+        <input class="admin-input" id="rf-sub" placeholder="ex: Annonces & updates 📢">
+      </div>
+      <div class="admin-field">
+        <label class="admin-label">Icône (emoji ou URL image)</label>
+        <input class="admin-input" id="rf-icon" placeholder="ex: 📢 ou https://...">
+      </div>
+      <div class="admin-field">
+        <label class="admin-label">Lien (URL)</label>
+        <input class="admin-input" id="rf-link" placeholder="https://...">
+      </div>
+      <div class="admin-form-actions">
+        <button class="btn-save" onclick="saveReseau()">💾 Sauvegarder</button>
+        <button class="btn-cancel" onclick="closeReseauForm()">Annuler</button>
+      </div>
+    </div>
+  </div>
+  <div class="admin-section">
+    <button class="admin-add-btn" onclick="openInfoCardForm(null)">
+      <span>➕</span> Ajouter une carte info
+    </button>
+    <div class="admin-section-title">ℹ️ Page Infos</div>
+    <div id="admin-infocards-list"></div>
+  </div>
+  <div class="admin-section" id="admin-infocard-form-section" style="display:none">
+    <div class="admin-form">
+      <div class="admin-form-title" id="admin-infocard-form-title">✏️ Nouvelle carte</div>
+      <input type="hidden" id="if-edit-key">
+      <div class="admin-field">
+        <label class="admin-label">Icône (emoji)</label>
+        <input class="admin-input" id="if-icon" placeholder="ex: ✅">
+      </div>
+      <div class="admin-field">
+        <label class="admin-label">Titre</label>
+        <input class="admin-input" id="if-title" placeholder="ex: Commander sur place">
+      </div>
+      <div class="admin-field">
+        <label class="admin-label">Badge horaires (optionnel)</label>
+        <input class="admin-input" id="if-badge" placeholder="ex: 🕐 13h / 00h 🕛">
+      </div>
+      <div class="admin-field">
+        <label class="admin-label">Lignes (une par ligne, ex: 💨 Service Rapide)</label>
+        <textarea class="admin-input admin-textarea" id="if-lines" placeholder="💨 Service Rapide&#10;🔐 Adresse discrète et sécurisée"></textarea>
+      </div>
+      <div class="admin-field">
+        <label class="admin-label">Lien cliquable — Nom (optionnel)</label>
+        <input class="admin-input" id="if-link-name" placeholder="ex: @HaribioContact">
+      </div>
+      <div class="admin-field">
+        <label class="admin-label">Lien cliquable — Sous-titre</label>
+        <input class="admin-input" id="if-link-sub" placeholder="ex: Nous contacter sur Telegram 📩">
+      </div>
+      <div class="admin-field">
+        <label class="admin-label">Lien cliquable — URL</label>
+        <input class="admin-input" id="if-link-url" placeholder="https://t.me/...">
+      </div>
+      <div class="admin-field">
+        <label class="admin-label">Lien cliquable — Icône</label>
+        <input class="admin-input" id="if-link-icon" placeholder="emoji ou URL image">
+      </div>
+      <div class="admin-form-actions">
+        <button class="btn-save" onclick="saveInfoCard()">💾 Sauvegarder</button>
+        <button class="btn-cancel" onclick="closeInfoCardForm()">Annuler</button>
+      </div>
+    </div>
+  </div>
   <div class="admin-section" id="admin-form-section" style="display:none">
     <div class="admin-form">
       <div class="admin-form-title" id="admin-form-title">✏️ Nouveau produit</div>
@@ -434,8 +518,13 @@ textarea{min-height:80px;resize:vertical;}
         <input class="admin-input" id="af-farm" placeholder="ex: BNF 🏴‍☠️">
       </div>
       <div class="admin-field">
-        <label class="admin-label">Fichier vidéo (nom)</label>
-        <input class="admin-input" id="af-video" placeholder="ex: dry_black.mp4">
+        <label class="admin-label">Vidéo du produit</label>
+        <div id="af-video-preview-wrap" style="margin-bottom:10px;display:none;">
+          <video id="af-video-preview" src="" controls playsinline style="width:100%;max-height:180px;object-fit:cover;border-radius:10px;border:1px solid rgba(255,215,0,0.15);display:block;background:#000;"></video>
+        </div>
+        <input type="file" accept="video/*" id="af-video-file" class="admin-input" style="padding:9px;">
+        <div id="af-video-upload-status" style="font-size:0.78rem;color:var(--cream-dim);margin-top:6px;min-height:14px;"></div>
+        <input type="hidden" id="af-video">
       </div>
       <div class="admin-field">
         <label class="admin-label">Image du produit</label>
@@ -555,82 +644,14 @@ textarea{min-height:80px;resize:vertical;}
 
     <!-- INFOS -->
     <div id="infos-page">
-      <div class="info-card" style="margin-top:8px;">
-        <div class="info-card-header"><div class="info-card-icon">✅</div><div class="info-card-title">Commander sur place</div></div>
-        <div style="background:rgba(255,215,0,0.04);border:1px solid rgba(255,215,0,0.10);border-radius:10px;padding:10px 14px;margin-bottom:14px;text-align:center;">
-          <span style="font-family:'Bangers',cursive;font-size:1.2rem;letter-spacing:2px;color:var(--orange);">🕐 13h / 00h 🕛</span>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:8px;">
-          <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:10px 14px;">
-            <span style="font-size:1.1rem">💨</span>
-            <span style="color:var(--white);font-weight:800;font-size:0.9rem;font-family:var(--font-body);letter-spacing:0.5px;">Service Rapide</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:10px 14px;">
-            <span style="font-size:1.1rem">🔐</span>
-            <span style="color:var(--white);font-weight:800;font-size:0.9rem;font-family:var(--font-body);letter-spacing:0.5px;">Adresse discrète et sécurisée</span>
-          </div>
-        </div>
-      </div>
-      <div class="info-card">
-        <div class="info-card-header"><div class="info-card-icon">🚚</div><div class="info-card-title">Système livraison</div></div>
-        <div style="background:rgba(230,50,0,0.08);border:1px solid rgba(230,50,0,0.15);border-radius:10px;padding:10px 14px;margin-bottom:14px;text-align:center;">
-          <span style="font-family:'Bangers',cursive;font-size:1.2rem;letter-spacing:2px;color:var(--orange);">🕑 14h / 22h 🕙</span>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:8px;">
-          <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:10px 14px;">
-            <span style="font-size:1.1rem">⚠️</span>
-            <span style="color:var(--white);font-weight:800;font-size:0.9rem;font-family:var(--font-body);letter-spacing:0.5px;">50€ de commande minimum</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:10px 14px;">
-            <span style="font-size:1.1rem">🙌</span>
-            <span style="color:var(--white);font-weight:800;font-size:0.9rem;font-family:var(--font-body);letter-spacing:0.5px;">Plusieurs tournées dans la journée</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:10px 14px;">
-            <span style="font-size:1.1rem">⏳</span>
-            <span style="color:var(--white);font-weight:800;font-size:0.9rem;font-family:var(--font-body);letter-spacing:0.5px;">Temps d'attente minimum</span>
-          </div>
-        </div>
-      </div>
-      <div class="info-card">
-        <div class="info-card-header"><div class="info-card-icon">📲</div><div class="info-card-title">Contact direct</div></div>
-        <div class="reseau-item" data-link="https://t.me/HaribioContact" style="cursor:pointer;">
-          <div class="reseau-icon-wrap" style="background:rgba(41,182,246,0.10);">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Telegram_logo.svg/512px-Telegram_logo.svg.png" alt="Telegram">
-          </div>
-          <div class="reseau-text"><div class="reseau-name">@HaribioContact</div><div class="reseau-sub">Nous contacter sur Telegram 📩</div></div>
-          <div class="reseau-arrow">›</div>
-        </div>
-      </div>
+      <div id="infos-cards-container"></div>
     </div>
 
 
     <!-- RÉSEAUX -->
     <div id="reseaux-page">
       <h2 class="section-title">🔥 Nos réseaux</h2>
-      <div class="reseaux-list">
-        <div class="reseau-item" data-link="https://tato.im/JohnLennon33">
-          <div class="reseau-icon-wrap" style="background:rgba(255,215,0,0.08);">🥔</div>
-          <div class="reseau-text"><div class="reseau-name">Contact Potato</div><div class="reseau-sub">Contact direct 📩</div></div>
-          <div class="reseau-arrow">›</div>
-        </div>
-        <div class="reseau-item" data-link="https://tato.im/haribio64">
-          <div class="reseau-icon-wrap" style="background:rgba(255,215,0,0.08);">🥔</div>
-          <div class="reseau-text"><div class="reseau-name">Notre Potato</div><div class="reseau-sub">Canal officiel 📢</div></div>
-          <div class="reseau-arrow">›</div>
-        </div>
-        <div class="reseau-item" data-link="https://tato.im/haribio64Pau">
-          <div class="reseau-icon-wrap" style="background:rgba(255,215,0,0.08);">🥔</div>
-          <div class="reseau-text"><div class="reseau-name">Canal retour/client</div><div class="reseau-sub">SAV & retours ✅</div></div>
-          <div class="reseau-arrow">›</div>
-        </div>
-        <div class="reseau-item" data-link="https://t.me/CaliCorp64">
-          <div class="reseau-icon-wrap" style="background:rgba(41,182,246,0.10);">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Telegram_logo.svg/512px-Telegram_logo.svg.png" alt="Telegram">
-          </div>
-          <div class="reseau-text"><div class="reseau-name">Notre Telegram</div><div class="reseau-sub">Annonces & updates 📢</div></div>
-          <div class="reseau-arrow">›</div>
-        </div>
-      </div>
+      <div class="reseaux-list" id="reseaux-list-container"></div>
     </div>
 
     <!-- AVIS -->
@@ -700,7 +721,7 @@ if (tg) {
   tgUser = tg.initDataUnsafe?.user || null;
 }
 
-// --- CLOUDINARY (upload d'images depuis le panel admin) ---
+// --- CLOUDINARY (upload d'images ET vidéos depuis le panel admin) ---
 // 👉 Remplace ces deux valeurs par celles de TON compte Cloudinary :
 // 1. Crée un compte gratuit sur https://cloudinary.com
 // 2. Dans Dashboard, note ton "Cloud name"
@@ -715,6 +736,22 @@ async function uploadImageToCloudinary(file){
   formData.append('file', file);
   formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
   const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+    method: 'POST',
+    body: formData
+  });
+  if(!res.ok){
+    const errText = await res.text();
+    throw new Error('Upload échoué: ' + errText);
+  }
+  const data = await res.json();
+  return data.secure_url;
+}
+
+async function uploadVideoToCloudinary(file){
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/video/upload`, {
     method: 'POST',
     body: formData
   });
@@ -761,6 +798,73 @@ async function fsSaveProduct(key, data){
 async function fsDeleteProduct(key){
   await window._fsDel(window._fsDoc(window._db, 'products', key));
 }
+
+// --- RÉSEAUX : liste de liens éditable depuis l'admin ---
+let reseauxItems = {};
+let reseauxSeeded = false;
+async function fsSaveReseau(key, data){
+  await window._fsSet(window._fsDoc(window._db, 'reseaux', key), data);
+}
+async function fsDeleteReseau(key){
+  await window._fsDel(window._fsDoc(window._db, 'reseaux', key));
+}
+async function seedReseauxIfEmpty(snap){
+  if(!snap.empty || reseauxSeeded) return;
+  reseauxSeeded = true;
+  const defaults = [
+    {name:'Contact Potato', sub:'Contact direct 📩', icon:'🥔', link:'https://tato.im/JohnLennon33', order:1},
+    {name:'Notre Potato', sub:'Canal officiel 📢', icon:'🥔', link:'https://tato.im/haribio64', order:2},
+    {name:'Canal retour/client', sub:'SAV & retours ✅', icon:'🥔', link:'https://tato.im/haribio64Pau', order:3},
+    {name:'Notre Telegram', sub:'Annonces & updates 📢', icon:'https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Telegram_logo.svg/512px-Telegram_logo.svg.png', link:'https://t.me/CaliCorp64', order:4}
+  ];
+  for(const d of defaults){ try{ await fsSaveReseau('seed_'+d.order+'_'+Date.now(), d); }catch(e){console.error(e);} }
+}
+window.initReseauxRealtime = function(){
+  try{
+    const colRef = window._fsCol(window._db, 'reseaux');
+    window._fsOnSnap(colRef, (snap) => {
+      const result = {};
+      snap.forEach(d => { result[d.id] = { key: d.id, ...d.data() }; });
+      reseauxItems = result;
+      renderReseauxPage();
+      if(document.getElementById('admin-overlay').classList.contains('open')) renderAdminReseauxList();
+      seedReseauxIfEmpty(snap);
+    }, (err) => { console.error('Erreur de synchronisation réseaux Firestore', err); });
+  }catch(e){ console.error('initReseauxRealtime error', e); }
+};
+
+// --- INFOS : cartes éditables depuis l'admin ---
+let infoCards = {};
+let infoCardsSeeded = false;
+async function fsSaveInfoCard(key, data){
+  await window._fsSet(window._fsDoc(window._db, 'infocards', key), data);
+}
+async function fsDeleteInfoCard(key){
+  await window._fsDel(window._fsDoc(window._db, 'infocards', key));
+}
+async function seedInfoCardsIfEmpty(snap){
+  if(!snap.empty || infoCardsSeeded) return;
+  infoCardsSeeded = true;
+  const defaults = [
+    {icon:'✅', title:'Commander sur place', badge:'🕐 13h / 00h 🕛', lines:'💨 Service Rapide\n🔐 Adresse discrète et sécurisée', order:1},
+    {icon:'🚚', title:'Système livraison', badge:'🕑 14h / 22h 🕙', lines:"⚠️ 50€ de commande minimum\n🙌 Plusieurs tournées dans la journée\n⏳ Temps d'attente minimum", order:2},
+    {icon:'📲', title:'Contact direct', linkName:'@HaribioContact', linkSub:'Nous contacter sur Telegram 📩', linkUrl:'https://t.me/HaribioContact', linkIcon:'https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Telegram_logo.svg/512px-Telegram_logo.svg.png', order:3}
+  ];
+  for(const d of defaults){ try{ await fsSaveInfoCard('seed_'+d.order+'_'+Date.now(), d); }catch(e){console.error(e);} }
+}
+window.initInfoCardsRealtime = function(){
+  try{
+    const colRef = window._fsCol(window._db, 'infocards');
+    window._fsOnSnap(colRef, (snap) => {
+      const result = {};
+      snap.forEach(d => { result[d.id] = { key: d.id, ...d.data() }; });
+      infoCards = result;
+      renderInfosPage();
+      if(document.getElementById('admin-overlay').classList.contains('open')) renderAdminInfoCardsList();
+      seedInfoCardsIfEmpty(snap);
+    }, (err) => { console.error('Erreur de synchronisation infos Firestore', err); });
+  }catch(e){ console.error('initInfoCardsRealtime error', e); }
+};
 
 let cart=[];
 try{cart=JSON.parse(localStorage.getItem('cart_dino76'))||[];}catch(e){cart=[];}
@@ -817,6 +921,55 @@ function renderProducts(list){
     const restockBadge=p.restock?`<div style="position:absolute;top:8px;left:8px;z-index:6;background:linear-gradient(135deg,#1a0a00,#2a1200);border:1px solid rgba(255,170,0,0.4);border-radius:8px;padding:4px 10px;font-family:'Bangers',cursive;font-size:0.8rem;letter-spacing:1.5px;color:#ffcc00;display:flex;align-items:center;gap:4px;"><span class="restock-spin">⏳</span> RESTOCK</div>`:'';
     card.innerHTML=`<div class="card-media">${mediaHTML}${restockBadge}<div class="manga-corner"></div><div class="card-overlay"><div class="card-title">${p.title}</div><div class="card-farm">${p.farm}</div></div></div>`;
     card.onclick=()=>openProductDetail(p.key);grid.appendChild(card);
+  });
+}
+
+function renderReseauxPage(){
+  const cont=document.getElementById('reseaux-list-container');
+  if(!cont) return;
+  const items=Object.values(reseauxItems).sort((a,b)=>(a.order||0)-(b.order||0));
+  if(!items.length){cont.innerHTML='<p style="text-align:center;color:#3a2010;padding:30px 0;font-weight:700;font-family:var(--font-body);">Aucun lien pour l\'instant.</p>';return;}
+  cont.innerHTML=items.map(r=>{
+    const iconHTML=(r.icon&&r.icon.startsWith('http'))?`<img src="${r.icon}" alt="">`:(r.icon||'🔗');
+    return `<div class="reseau-item" data-link="${r.link||'#'}">
+      <div class="reseau-icon-wrap" style="background:rgba(255,215,0,0.08);">${iconHTML}</div>
+      <div class="reseau-text"><div class="reseau-name">${r.name||''}</div><div class="reseau-sub">${r.sub||''}</div></div>
+      <div class="reseau-arrow">›</div>
+    </div>`;
+  }).join('');
+  cont.querySelectorAll('.reseau-item[data-link]').forEach(el=>{
+    el.onclick=()=>{const l=el.getAttribute('data-link');if(l&&l!=='#'){if(tg)tg.openLink(l);else window.open(l,'_blank');}};
+  });
+}
+
+function renderInfosPage(){
+  const cont=document.getElementById('infos-cards-container');
+  if(!cont) return;
+  const items=Object.values(infoCards).sort((a,b)=>(a.order||0)-(b.order||0));
+  if(!items.length){cont.innerHTML='<p style="text-align:center;color:#3a2010;padding:30px 0;font-weight:700;font-family:var(--font-body);">Aucune information pour l\'instant.</p>';return;}
+  cont.innerHTML=items.map(c=>{
+    let linesHTML='';
+    if(c.lines&&c.lines.trim()){
+      const rows=c.lines.split('\n').filter(l=>l.trim()).map(line=>`<div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:10px 14px;"><span style="color:var(--white);font-weight:800;font-size:0.9rem;font-family:var(--font-body);letter-spacing:0.5px;">${line}</span></div>`).join('');
+      linesHTML=`<div style="display:flex;flex-direction:column;gap:8px;">${rows}</div>`;
+    }
+    const badgeHTML=c.badge?`<div style="background:rgba(255,215,0,0.04);border:1px solid rgba(255,215,0,0.10);border-radius:10px;padding:10px 14px;margin-bottom:14px;text-align:center;"><span style="font-family:'Bangers',cursive;font-size:1.2rem;letter-spacing:2px;color:var(--orange);">${c.badge}</span></div>`:'';
+    let linkHTML='';
+    if(c.linkUrl){
+      const linkIconHTML=(c.linkIcon&&c.linkIcon.startsWith('http'))?`<img src="${c.linkIcon}" alt="">`:(c.linkIcon||'🔗');
+      linkHTML=`<div class="reseau-item" data-link="${c.linkUrl}" style="cursor:pointer;">
+        <div class="reseau-icon-wrap" style="background:rgba(41,182,246,0.10);">${linkIconHTML}</div>
+        <div class="reseau-text"><div class="reseau-name">${c.linkName||''}</div><div class="reseau-sub">${c.linkSub||''}</div></div>
+        <div class="reseau-arrow">›</div>
+      </div>`;
+    }
+    return `<div class="info-card">
+      <div class="info-card-header"><div class="info-card-icon">${c.icon||'ℹ️'}</div><div class="info-card-title">${c.title||''}</div></div>
+      ${badgeHTML}${linesHTML}${linkHTML}
+    </div>`;
+  }).join('');
+  cont.querySelectorAll('.reseau-item[data-link]').forEach(el=>{
+    el.onclick=()=>{const l=el.getAttribute('data-link');if(l){if(tg)tg.openLink(l);else window.open(l,'_blank');}};
   });
 }
 
@@ -940,8 +1093,114 @@ function closeAdminLogin(){document.getElementById('admin-login').classList.remo
 function updatePinDots(){for(let i=0;i<4;i++){document.getElementById('dot-'+i).classList.toggle('filled',i<currentPin.length);}}
 document.querySelectorAll('.kp-btn').forEach(btn=>{btn.addEventListener('click',()=>{const v=btn.dataset.v;if(v==='del'){currentPin=currentPin.slice(0,-1);updatePinDots();return;}if(v==='enter'){checkPin();return;}if(currentPin.length<4){currentPin+=v;updatePinDots();}if(currentPin.length===4)setTimeout(checkPin,150);});});
 function checkPin(){if(currentPin===ADMIN_PIN){closeAdminLogin();openAdmin();}else{document.getElementById('pin-error').style.display='block';currentPin='';updatePinDots();setTimeout(()=>{document.getElementById('pin-error').style.display='none';},2000);}}
-function openAdmin(){renderAdminProductsList();closeAdminForm();document.getElementById('admin-overlay').classList.add('open');}
+function openAdmin(){renderAdminProductsList();renderAdminReseauxList();renderAdminInfoCardsList();closeAdminForm();closeReseauForm();closeInfoCardForm();document.getElementById('admin-overlay').classList.add('open');}
 function closeAdmin(){document.getElementById('admin-overlay').classList.remove('open');}
+
+function renderAdminReseauxList(){
+  const list=document.getElementById('admin-reseaux-list');if(!list)return;
+  const items=Object.values(reseauxItems).sort((a,b)=>(a.order||0)-(b.order||0));list.innerHTML='';
+  if(!items.length){list.innerHTML='<p style="color:#3a2010;text-align:center;padding:20px;font-weight:700;font-family:var(--font-body);">Aucun lien.</p>';return;}
+  items.forEach(r=>{
+    const div=document.createElement('div');div.className='admin-product-card';
+    div.innerHTML=`<div class="admin-product-name">${r.name||''}</div><div class="admin-product-farm">${r.sub||''}</div><div class="admin-product-farm" style="word-break:break-all;">${r.link||''}</div><div class="admin-product-actions"><button class="btn-edit" onclick="openReseauForm('${r.key}')">✏️ Modifier</button><button class="btn-delete" onclick="deleteReseau('${r.key}')">🗑️</button></div>`;
+    list.appendChild(div);
+  });
+}
+function openReseauForm(key){
+  const section=document.getElementById('admin-reseau-form-section');section.style.display='block';section.scrollIntoView({behavior:'smooth'});
+  document.getElementById('rf-edit-key').value=key||'';
+  if(key){
+    document.getElementById('admin-reseau-form-title').textContent='✏️ Modifier le lien';
+    const r=reseauxItems[key];
+    document.getElementById('rf-name').value=r.name||'';
+    document.getElementById('rf-sub').value=r.sub||'';
+    document.getElementById('rf-icon').value=r.icon||'';
+    document.getElementById('rf-link').value=r.link||'';
+  }else{
+    document.getElementById('admin-reseau-form-title').textContent='➕ Nouveau lien';
+    ['rf-name','rf-sub','rf-icon','rf-link'].forEach(id=>document.getElementById(id).value='');
+  }
+}
+function closeReseauForm(){document.getElementById('admin-reseau-form-section').style.display='none';}
+async function saveReseau(){
+  const key=document.getElementById('rf-edit-key').value;
+  const name=document.getElementById('rf-name').value.trim();
+  const sub=document.getElementById('rf-sub').value.trim();
+  const icon=document.getElementById('rf-icon').value.trim();
+  const link=document.getElementById('rf-link').value.trim();
+  if(!name||!link){alert('⚠️ Le nom et le lien sont obligatoires !');return;}
+  const order=(key&&reseauxItems[key])?(reseauxItems[key].order||Date.now()):Date.now();
+  const saveKey=key||('reseau_'+Date.now());
+  const saveBtn=document.querySelector('#admin-reseau-form-section .btn-save');if(saveBtn){saveBtn.disabled=true;saveBtn.textContent='Sauvegarde...';}
+  try{
+    await fsSaveReseau(saveKey,{name,sub,icon,link,order});
+    closeReseauForm();showAdminToast('✅ Lien sauvegardé !');
+  }catch(e){console.error(e);alert('❌ Erreur lors de la sauvegarde. Vérifiez votre connexion.');}
+  finally{if(saveBtn){saveBtn.disabled=false;saveBtn.innerHTML='💾 Sauvegarder';}}
+}
+async function deleteReseau(key){
+  if(!confirm('Supprimer ce lien ?'))return;
+  try{await fsDeleteReseau(key);showAdminToast('🗑️ Lien supprimé');}
+  catch(e){console.error(e);showAdminToast('❌ Erreur de synchronisation');}
+}
+window.openReseauForm=openReseauForm;window.closeReseauForm=closeReseauForm;window.saveReseau=saveReseau;window.deleteReseau=deleteReseau;
+
+function renderAdminInfoCardsList(){
+  const list=document.getElementById('admin-infocards-list');if(!list)return;
+  const items=Object.values(infoCards).sort((a,b)=>(a.order||0)-(b.order||0));list.innerHTML='';
+  if(!items.length){list.innerHTML='<p style="color:#3a2010;text-align:center;padding:20px;font-weight:700;font-family:var(--font-body);">Aucune carte.</p>';return;}
+  items.forEach(c=>{
+    const div=document.createElement('div');div.className='admin-product-card';
+    div.innerHTML=`<div class="admin-product-name">${c.icon||''} ${c.title||''}</div><div class="admin-product-farm">${c.badge||''}</div><div class="admin-product-actions"><button class="btn-edit" onclick="openInfoCardForm('${c.key}')">✏️ Modifier</button><button class="btn-delete" onclick="deleteInfoCard('${c.key}')">🗑️</button></div>`;
+    list.appendChild(div);
+  });
+}
+function openInfoCardForm(key){
+  const section=document.getElementById('admin-infocard-form-section');section.style.display='block';section.scrollIntoView({behavior:'smooth'});
+  document.getElementById('if-edit-key').value=key||'';
+  if(key){
+    document.getElementById('admin-infocard-form-title').textContent='✏️ Modifier la carte';
+    const c=infoCards[key];
+    document.getElementById('if-icon').value=c.icon||'';
+    document.getElementById('if-title').value=c.title||'';
+    document.getElementById('if-badge').value=c.badge||'';
+    document.getElementById('if-lines').value=c.lines||'';
+    document.getElementById('if-link-name').value=c.linkName||'';
+    document.getElementById('if-link-sub').value=c.linkSub||'';
+    document.getElementById('if-link-url').value=c.linkUrl||'';
+    document.getElementById('if-link-icon').value=c.linkIcon||'';
+  }else{
+    document.getElementById('admin-infocard-form-title').textContent='➕ Nouvelle carte';
+    ['if-icon','if-title','if-badge','if-lines','if-link-name','if-link-sub','if-link-url','if-link-icon'].forEach(id=>document.getElementById(id).value='');
+  }
+}
+function closeInfoCardForm(){document.getElementById('admin-infocard-form-section').style.display='none';}
+async function saveInfoCard(){
+  const key=document.getElementById('if-edit-key').value;
+  const icon=document.getElementById('if-icon').value.trim();
+  const title=document.getElementById('if-title').value.trim();
+  const badge=document.getElementById('if-badge').value.trim();
+  const lines=document.getElementById('if-lines').value.trim();
+  const linkName=document.getElementById('if-link-name').value.trim();
+  const linkSub=document.getElementById('if-link-sub').value.trim();
+  const linkUrl=document.getElementById('if-link-url').value.trim();
+  const linkIcon=document.getElementById('if-link-icon').value.trim();
+  if(!title){alert('⚠️ Le titre est obligatoire !');return;}
+  const order=(key&&infoCards[key])?(infoCards[key].order||Date.now()):Date.now();
+  const saveKey=key||('infocard_'+Date.now());
+  const saveBtn=document.querySelector('#admin-infocard-form-section .btn-save');if(saveBtn){saveBtn.disabled=true;saveBtn.textContent='Sauvegarde...';}
+  try{
+    await fsSaveInfoCard(saveKey,{icon,title,badge,lines,linkName,linkSub,linkUrl,linkIcon,order});
+    closeInfoCardForm();showAdminToast('✅ Carte sauvegardée !');
+  }catch(e){console.error(e);alert('❌ Erreur lors de la sauvegarde. Vérifiez votre connexion.');}
+  finally{if(saveBtn){saveBtn.disabled=false;saveBtn.innerHTML='💾 Sauvegarder';}}
+}
+async function deleteInfoCard(key){
+  if(!confirm('Supprimer cette carte ?'))return;
+  try{await fsDeleteInfoCard(key);showAdminToast('🗑️ Carte supprimée');}
+  catch(e){console.error(e);showAdminToast('❌ Erreur de synchronisation');}
+}
+window.openInfoCardForm=openInfoCardForm;window.closeInfoCardForm=closeInfoCardForm;window.saveInfoCard=saveInfoCard;window.deleteInfoCard=deleteInfoCard;
 
 function renderAdminProductsList(){
   const list=document.getElementById('admin-products-list');const all=products;list.innerHTML='';
@@ -975,6 +1234,8 @@ function openAdminForm(key){
   document.getElementById('admin-edit-key').value=key||'';
   document.getElementById('af-image-file').value='';
   document.getElementById('af-image-upload-status').textContent='';
+  document.getElementById('af-video-file').value='';
+  document.getElementById('af-video-upload-status').textContent='';
   if(key){
     document.getElementById('admin-form-title').textContent='✏️ Modifier le produit';
     const p=products[key];
@@ -993,6 +1254,12 @@ function openAdminForm(key){
     } else {
       document.getElementById('af-image-preview-wrap').style.display='none';
     }
+    if(p.video){
+      document.getElementById('af-video-preview').src=p.video;
+      document.getElementById('af-video-preview-wrap').style.display='block';
+    } else {
+      document.getElementById('af-video-preview-wrap').style.display='none';
+    }
   }
   else{
     document.getElementById('admin-form-title').textContent='➕ Nouveau produit';
@@ -1000,6 +1267,7 @@ function openAdminForm(key){
     adminRestockValue=false;
     renderQtyRows([{qty:'',price:''}]);
     document.getElementById('af-image-preview-wrap').style.display='none';
+    document.getElementById('af-video-preview-wrap').style.display='none';
   }
   updateRestockButtons();
 }
@@ -1022,6 +1290,28 @@ document.getElementById('af-image-file').addEventListener('change', async (e)=>{
     preview.src = url;
     previewWrap.style.display = 'block';
     status.textContent = '✅ Image uploadée avec succès !';
+    status.style.color = 'var(--green-light)';
+  }catch(err){
+    console.error(err);
+    status.textContent = '❌ Erreur upload (vérifie ton cloud name / preset Cloudinary)';
+    status.style.color = '#ff4422';
+  }
+});
+
+document.getElementById('af-video-file').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const status = document.getElementById('af-video-upload-status');
+  const preview = document.getElementById('af-video-preview');
+  const previewWrap = document.getElementById('af-video-preview-wrap');
+  status.textContent = '⏳ Upload de la vidéo en cours...';
+  status.style.color = 'var(--orange)';
+  try{
+    const url = await uploadVideoToCloudinary(file);
+    document.getElementById('af-video').value = url;
+    preview.src = url;
+    previewWrap.style.display = 'block';
+    status.textContent = '✅ Vidéo uploadée avec succès !';
     status.style.color = 'var(--green-light)';
   }catch(err){
     console.error(err);
