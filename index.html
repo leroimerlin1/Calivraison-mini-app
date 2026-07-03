@@ -1308,7 +1308,7 @@ function finalizeOrder(){
   const modeBtn=document.querySelector('.questionnaire .option-btn.active');if(!modeBtn){alert('Veuillez choisir un mode de récupération.');return;}
   let modeLabel='';if(modeBtn.dataset.type==='pickup')modeLabel='Venir sur place';else modeLabel='Livraison';
   const senderName=tgUser?.username?'@'+tgUser.username:(tgUser?.first_name||'Utilisateur');
-  let message=`🍬 *NOUVELLE COMMANDE — HARIBIO 64* 🍣\n\n👤 ${senderName}\n📅 ${new Date().toLocaleString('fr-FR')}\n\n🛍️ *Articles :*\n`;
+  let message=`🥷 *NOUVELLE COMMANDE — Calivraison 33* 🥷\n\n👤 ${senderName}\n📅 ${new Date().toLocaleString('fr-FR')}\n\n🛍️ *Articles :*\n`;
   let total=0;let itemsText='';
   cart.forEach(item=>{total+=parseInt(item.price)||0;message+=`• ${item.title} — ${item.qty} (${item.price})\n`;itemsText+=`• ${item.title} ${item.qty} (${item.price})\n`;});
   message+=`\n💰 *Total : ${total} €*\n\n📦 *Mode :* ${modeLabel}\n`;
@@ -1317,7 +1317,7 @@ function finalizeOrder(){
   if(rouletteWonPrize){message+=`\n\n🎡 *Lot gagné à la roulette :* ${rouletteWonPrize.icon||'🎁'} ${rouletteWonPrize.name||''}`;}
   message+=`\n\nMerci ! 🙏`;
   commandes.push({tgName:tgUser?.first_name||'Invité',items:itemsText.trim(),total,mode:modeLabel,date:new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'}),prize:rouletteWonPrize?rouletteWonPrize.name:null});saveCommandes();
-  const url=`https://t.me/HaribioContact?text=${encodeURIComponent(message)}`;if(tg)tg.openTelegramLink(url);else window.open(url,'_blank');
+  const url=`https://t.me/@Contactarca?text=${encodeURIComponent(message)}`;if(tg)tg.openTelegramLink(url);else window.open(url,'_blank');
   rouletteWonPrize=null;
 }
 
