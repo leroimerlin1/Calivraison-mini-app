@@ -7,7 +7,7 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, orderBy, query, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, getDoc, orderBy, query, where, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     const firebaseConfig = {
       apiKey: "AIzaSyBfJnqO4Mb1ow-8s27hqxj1olDiWEVVuR0",
       authDomain: "calivraison-cd60b.firebaseapp.com",
@@ -23,8 +23,10 @@
     window._fsCol = collection;
     window._fsAdd = addDoc;
     window._fsGet = getDocs;
+    window._fsGetDoc = getDoc;
     window._fsQ = query;
     window._fsOrder = orderBy;
+    window._fsWhere = where;
     window._fsDoc = doc;
     window._fsSet = setDoc;
     window._fsDel = deleteDoc;
@@ -35,6 +37,7 @@
         if(window.initProductsRealtime) window.initProductsRealtime();
         if(window.initReseauxRealtime) window.initReseauxRealtime();
         if(window.initInfoCardsRealtime) window.initInfoCardsRealtime();
+        if(window.initRouletteRealtime) window.initRouletteRealtime();
       }, 300);
     });
   </script>
@@ -315,6 +318,7 @@ textarea{min-height:80px;resize:vertical;}
 .btn-edit{flex:1;padding:10px;background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.15);color:var(--orange);border-radius:10px;font-family:'Bangers',cursive;font-size:0.9rem;letter-spacing:1px;cursor:pointer;}
 .btn-delete{padding:10px 16px;background:rgba(230,50,0,0.12);border:1px solid rgba(230,50,0,0.3);color:#ff4422;border-radius:10px;font-family:'Bangers',cursive;font-size:0.9rem;letter-spacing:1px;cursor:pointer;}
 .btn-toggle-restock{padding:10px 12px;background:rgba(255,204,0,0.06);border:1px solid rgba(255,204,0,0.2);color:#ffcc00;border-radius:10px;font-family:'Bangers',cursive;font-size:0.85rem;letter-spacing:1px;cursor:pointer;white-space:nowrap;}
+.btn-toggle-active{padding:10px 12px;background:rgba(94,224,90,0.08);border:1px solid rgba(94,224,90,0.25);color:var(--green-light);border-radius:10px;font-family:'Bangers',cursive;font-size:0.85rem;letter-spacing:1px;cursor:pointer;white-space:nowrap;}
 .admin-form{background:#111111;border:1px solid rgba(255,215,0,0.15);border-radius:16px;padding:18px;margin-top:16px;position:relative;overflow:hidden;}
 .admin-form::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--red),var(--orange),transparent);opacity:0.4;}
 .admin-form-title{font-family:'Bangers',cursive;font-size:1.2rem;letter-spacing:2px;color:var(--orange);margin-bottom:16px;}
@@ -352,6 +356,26 @@ textarea{min-height:80px;resize:vertical;}
 .admin-toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1a0800;border:1px solid rgba(255,215,0,0.15);color:var(--orange-light);padding:12px 24px;border-radius:12px;font-family:'Bangers',cursive;font-size:1rem;letter-spacing:2px;z-index:999999;white-space:nowrap;opacity:0;transition:opacity 0.3s;pointer-events:none;}
 .admin-toast.show{opacity:1;}
 .orange-line{height:1px;margin:0 16px 14px;background:linear-gradient(90deg,transparent,rgba(255,215,0,0.2),rgba(230,50,0,0.15),transparent);}
+
+/* ROULETTE */
+#roulette-overlay{display:none;position:fixed;inset:0;z-index:99997;background:rgba(0,0,0,0.96);align-items:center;justify-content:center;padding:20px;flex-direction:column;}
+#roulette-overlay.open{display:flex;}
+.roulette-box{width:100%;max-width:360px;text-align:center;display:flex;flex-direction:column;align-items:center;}
+.roulette-title{font-family:'Bangers',cursive;font-size:1.8rem;letter-spacing:3px;color:var(--orange);text-shadow:2px 2px 0 var(--red-dark);margin-bottom:6px;}
+.roulette-sub{font-size:0.85rem;font-weight:700;color:var(--cream-dim);letter-spacing:1px;margin-bottom:22px;font-family:var(--font-body);text-transform:uppercase;}
+.roulette-wheel-wrap{position:relative;width:280px;height:280px;margin-bottom:26px;}
+.roulette-pointer{position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:24px solid var(--orange);z-index:5;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.8));}
+#roulette-canvas{border-radius:50%;border:4px solid rgba(255,215,0,0.25);box-shadow:0 0 0 6px rgba(0,0,0,0.6), 0 0 30px rgba(255,215,0,0.15);transition:transform 4.5s cubic-bezier(0.12,0.72,0.14,1);}
+.roulette-center-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--red),var(--red-dark));border:3px solid rgba(255,215,0,0.5);color:var(--orange-light);font-family:'Bangers',cursive;font-size:1rem;letter-spacing:1px;cursor:pointer;z-index:6;box-shadow:0 0 16px rgba(230,50,0,0.5);}
+.roulette-center-btn:disabled{opacity:0.5;cursor:not-allowed;}
+.roulette-result{min-height:70px;display:flex;flex-direction:column;align-items:center;justify-content:center;margin-bottom:14px;}
+.roulette-result-emoji{font-size:2.6rem;margin-bottom:6px;display:none;}
+.roulette-result-text{font-family:'Bangers',cursive;font-size:1.3rem;color:var(--orange-light);letter-spacing:1px;display:none;text-align:center;}
+.roulette-wait-text{font-size:0.9rem;color:var(--cream-dim);font-weight:700;font-family:var(--font-body);letter-spacing:0.5px;line-height:1.6;}
+.roulette-btn-continue{display:none;width:100%;padding:15px;background:linear-gradient(135deg,var(--red),var(--red-dark));color:var(--orange-light);border:1px solid rgba(255,215,0,0.15);border-radius:14px;font-size:1.1rem;cursor:pointer;font-family:'Bangers',cursive;letter-spacing:2px;margin-top:8px;}
+.roulette-btn-skip{background:transparent;border:none;color:#6a4020;font-size:0.82rem;font-weight:700;cursor:pointer;margin-top:14px;font-family:var(--font-body);letter-spacing:1px;text-transform:uppercase;}
+
+.admin-prize-color-dot{display:inline-block;width:14px;height:14px;border-radius:4px;margin-right:6px;vertical-align:middle;border:1px solid rgba(255,255,255,0.2);}
   </style>
 </head>
 <body>
@@ -406,6 +430,26 @@ textarea{min-height:80px;resize:vertical;}
   </div>
 </div>
 
+<!-- ROULETTE -->
+<div id="roulette-overlay">
+  <div class="roulette-box">
+    <div class="roulette-title">🎡 ROULETTE DE LA CHANCE</div>
+    <div class="roulette-sub" id="roulette-sub-text">Tente ta chance !</div>
+    <div class="roulette-wheel-wrap">
+      <div class="roulette-pointer"></div>
+      <canvas id="roulette-canvas" width="280" height="280"></canvas>
+      <button class="roulette-center-btn" id="roulette-spin-btn" onclick="spinRoulette()">SPIN</button>
+    </div>
+    <div class="roulette-result" id="roulette-result">
+      <div class="roulette-result-emoji" id="roulette-result-emoji"></div>
+      <div class="roulette-result-text" id="roulette-result-text"></div>
+      <div class="roulette-wait-text" id="roulette-wait-text" style="display:none"></div>
+    </div>
+    <button class="roulette-btn-continue" id="roulette-continue-btn" onclick="closeRouletteAndFinalize()">Continuer ma commande 🍬</button>
+    <button class="roulette-btn-skip" id="roulette-skip-btn" onclick="closeRouletteAndFinalize()">Passer et commander directement</button>
+  </div>
+</div>
+
 <!-- ADMIN PANEL -->
 <div id="admin-overlay">
   <div class="admin-header">
@@ -418,6 +462,36 @@ textarea{min-height:80px;resize:vertical;}
     </button>
     <div class="admin-section-title">📦 Produits actuels</div>
     <div id="admin-products-list"></div>
+  </div>
+  <div class="admin-section">
+    <button class="admin-add-btn" onclick="openPrizeForm(null)">
+      <span>🎁</span> Ajouter un lot roulette
+    </button>
+    <div class="admin-section-title">🎡 Lots de la roulette</div>
+    <p style="font-size:0.78rem;color:#6a4020;font-weight:700;margin-bottom:12px;font-family:var(--font-body);letter-spacing:0.5px;">Chaque lot actif a exactement la même chance d'être tiré.</p>
+    <div id="admin-prizes-list"></div>
+  </div>
+  <div class="admin-section" id="admin-prize-form-section" style="display:none">
+    <div class="admin-form">
+      <div class="admin-form-title" id="admin-prize-form-title">✏️ Nouveau lot</div>
+      <input type="hidden" id="pf-edit-key">
+      <div class="admin-field">
+        <label class="admin-label">Emoji / icône</label>
+        <input class="admin-input" id="pf-icon" placeholder="ex: 🎁">
+      </div>
+      <div class="admin-field">
+        <label class="admin-label">Nom du lot</label>
+        <input class="admin-input" id="pf-name" placeholder="ex: 5€ de réduction">
+      </div>
+      <div class="admin-field">
+        <label class="admin-label">Couleur du secteur</label>
+        <input class="admin-input" id="pf-color" type="color" value="#e63200" style="height:44px;padding:4px;">
+      </div>
+      <div class="admin-form-actions">
+        <button class="btn-save" onclick="savePrize()">💾 Sauvegarder</button>
+        <button class="btn-cancel" onclick="closePrizeForm()">Annuler</button>
+      </div>
+    </div>
   </div>
   <div class="admin-section">
     <button class="admin-add-btn" onclick="openReseauForm(null)">
@@ -859,6 +933,26 @@ window.initInfoCardsRealtime = function(){
   }catch(e){ console.error('initInfoCardsRealtime error', e); }
 };
 
+// --- ROULETTE : lots éditables depuis l'admin (collection "roulette_prizes") ---
+let roulettePrizes = {};
+async function fsSavePrize(key, data){
+  await window._fsSet(window._fsDoc(window._db, 'roulette_prizes', key), data);
+}
+async function fsDeletePrize(key){
+  await window._fsDel(window._fsDoc(window._db, 'roulette_prizes', key));
+}
+window.initRouletteRealtime = function(){
+  try{
+    const colRef = window._fsCol(window._db, 'roulette_prizes');
+    window._fsOnSnap(colRef, (snap) => {
+      const result = {};
+      snap.forEach(d => { result[d.id] = { key: d.id, ...d.data() }; });
+      roulettePrizes = result;
+      if(document.getElementById('admin-overlay').classList.contains('open')) renderAdminPrizesList();
+    }, (err) => { console.error('Erreur de synchronisation roulette Firestore', err); });
+  }catch(e){ console.error('initRouletteRealtime error', e); }
+};
+
 let cart=[];
 try{cart=JSON.parse(localStorage.getItem('cart_dino76'))||[];}catch(e){cart=[];}
 function saveCart(){try{localStorage.setItem('cart_dino76',JSON.stringify(cart));}catch(e){}updateBadge();}
@@ -1051,7 +1145,165 @@ function renderCart(){
 }
 document.getElementById('cart-page').addEventListener('click',e=>{if(e.target.classList.contains('delete-btn')){cart.splice(parseInt(e.target.dataset.index),1);saveCart();renderCart();}});
 document.querySelectorAll('.option-btn').forEach(btn=>{btn.addEventListener('click',()=>{if(btn.closest('.questionnaire')){document.querySelectorAll('.questionnaire .option-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.getElementById('pickup-questions').style.display=btn.dataset.type==='pickup'?'block':'none';document.getElementById('delivery-questions').style.display=btn.dataset.type==='delivery'?'block':'none';}});});
+
+// ============ ROULETTE : logique de tirage hebdomadaire ============
+
+// Identifiant unique et stable pour l'utilisateur (Telegram si dispo, sinon local)
+function getRouletteUserId(){
+  if(tgUser?.id) return 'tg_'+tgUser.id;
+  let localId=null;
+  try{ localId=localStorage.getItem('roulette_local_uid'); }catch(e){}
+  if(!localId){
+    localId='local_'+Date.now()+'_'+Math.random().toString(36).slice(2,10);
+    try{ localStorage.setItem('roulette_local_uid', localId); }catch(e){}
+  }
+  return localId;
+}
+
+const ROULETTE_COOLDOWN_MS = 7*24*60*60*1000; // 1 semaine
+
+async function getRouletteSpinDoc(uid){
+  try{
+    const ref=window._fsDoc(window._db,'roulette_spins',uid);
+    const snap=await window._fsGetDoc(ref);
+    if(snap.exists()) return snap.data();
+    return null;
+  }catch(e){ console.error('getRouletteSpinDoc error',e); return null; }
+}
+
+async function saveRouletteSpin(uid, prizeName){
+  try{
+    const ref=window._fsDoc(window._db,'roulette_spins',uid);
+    await window._fsSet(ref, { lastSpin: Date.now(), lastPrize: prizeName||null });
+  }catch(e){ console.error('saveRouletteSpin error',e); }
+}
+
+let rouletteEligible=false;
+let rouletteWonPrize=null;
+let rouletteSpinning=false;
+let rouletteActivePrizesCache=[];
+
+// Dessine la roue sur le canvas à partir de la liste de lots actifs
+function drawRouletteWheel(prizes){
+  const canvas=document.getElementById('roulette-canvas');
+  const ctx=canvas.getContext('2d');
+  const size=canvas.width;const radius=size/2;
+  ctx.clearRect(0,0,size,size);
+  const n=prizes.length;
+  if(n===0){
+    ctx.fillStyle='#111111';ctx.beginPath();ctx.arc(radius,radius,radius,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#ffd700';ctx.font='bold 16px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('Aucun lot',radius,radius);
+    return;
+  }
+  const segAngle=(Math.PI*2)/n;
+  prizes.forEach((p,i)=>{
+    const start=i*segAngle;const end=start+segAngle;
+    ctx.beginPath();ctx.moveTo(radius,radius);ctx.arc(radius,radius,radius,start,end);ctx.closePath();
+    ctx.fillStyle=p.color||(i%2===0?'#e63200':'#161616');
+    ctx.fill();
+    ctx.strokeStyle='rgba(255,215,0,0.25)';ctx.lineWidth=1.5;ctx.stroke();
+    // texte
+    ctx.save();
+    ctx.translate(radius,radius);
+    ctx.rotate(start+segAngle/2);
+    ctx.textAlign='right';ctx.textBaseline='middle';
+    ctx.fillStyle='#ffffff';ctx.font='bold 12px "Barlow Condensed", sans-serif';
+    const label=(p.icon?p.icon+' ':'')+(p.name||'');
+    ctx.fillText(label.length>16?label.slice(0,15)+'…':label, radius-14, 0);
+    ctx.restore();
+  });
+}
+
+function getActivePrizes(){
+  return Object.values(roulettePrizes).filter(p=>p.active!==false);
+}
+
+async function openRouletteBeforeOrder(){
+  const uid=getRouletteUserId();
+  const spinDoc=await getRouletteSpinDoc(uid);
+  const now=Date.now();
+  const canSpin = !spinDoc || (now - (spinDoc.lastSpin||0)) >= ROULETTE_COOLDOWN_MS;
+  const activePrizes=getActivePrizes();
+
+  if(!canSpin || activePrizes.length===0){
+    // Pas de roulette disponible cette semaine (ou aucun lot configuré) : on passe directement à la commande
+    finalizeOrder();
+    return;
+  }
+
+  rouletteEligible=true;
+  rouletteWonPrize=null;
+  rouletteSpinning=false;
+  rouletteActivePrizesCache=activePrizes;
+
+  document.getElementById('roulette-sub-text').textContent='1 tour offert cette semaine — tente ta chance !';
+  document.getElementById('roulette-result-emoji').style.display='none';
+  document.getElementById('roulette-result-text').style.display='none';
+  document.getElementById('roulette-wait-text').style.display='none';
+  document.getElementById('roulette-continue-btn').style.display='none';
+  document.getElementById('roulette-skip-btn').style.display='block';
+  const spinBtn=document.getElementById('roulette-spin-btn');
+  spinBtn.disabled=false;spinBtn.textContent='SPIN';
+
+  const canvas=document.getElementById('roulette-canvas');
+  canvas.style.transition='none';
+  canvas.style.transform='rotate(0deg)';
+  drawRouletteWheel(activePrizes);
+
+  document.getElementById('roulette-overlay').classList.add('open');
+}
+
+window.spinRoulette=async function(){
+  if(rouletteSpinning) return;
+  const prizes=rouletteActivePrizesCache;
+  if(!prizes.length) return;
+  rouletteSpinning=true;
+  document.getElementById('roulette-spin-btn').disabled=true;
+  document.getElementById('roulette-skip-btn').style.display='none';
+
+  // Chance strictement égale pour chaque lot
+  const n=prizes.length;
+  const selectedIndex=Math.floor(Math.random()*n);
+  const segAngle=360/n;
+  const middleAngle=(selectedIndex+0.5)*segAngle;
+  const extraSpins=6; // tours complets avant de s'arrêter
+  const finalRotation=extraSpins*360 + (360-middleAngle);
+
+  const canvas=document.getElementById('roulette-canvas');
+  canvas.style.transition='transform 4.5s cubic-bezier(0.12,0.72,0.14,1)';
+  // force reflow pour que la transition parte bien de l'état actuel
+  void canvas.offsetWidth;
+  canvas.style.transform=`rotate(${finalRotation}deg)`;
+
+  const prize=prizes[selectedIndex];
+  const uid=getRouletteUserId();
+
+  setTimeout(async ()=>{
+    rouletteWonPrize=prize;
+    document.getElementById('roulette-result-emoji').textContent=prize.icon||'🎁';
+    document.getElementById('roulette-result-emoji').style.display='block';
+    document.getElementById('roulette-result-text').textContent='Tu as gagné : '+(prize.name||'un lot')+' !';
+    document.getElementById('roulette-result-text').style.display='block';
+    document.getElementById('roulette-continue-btn').style.display='block';
+    await saveRouletteSpin(uid, prize.name||'');
+  }, 4600);
+};
+
+window.closeRouletteAndFinalize=function(){
+  document.getElementById('roulette-overlay').classList.remove('open');
+  finalizeOrder();
+};
+
+// ============ FIN LOGIQUE ROULETTE ============
+
 document.getElementById('submit-order-btn').onclick=()=>{
+  if(!cart.length){alert('Votre panier est vide');return;}
+  const modeBtn=document.querySelector('.questionnaire .option-btn.active');if(!modeBtn){alert('Veuillez choisir un mode de récupération.');return;}
+  openRouletteBeforeOrder();
+};
+
+function finalizeOrder(){
   if(!cart.length){alert('Votre panier est vide');return;}
   const modeBtn=document.querySelector('.questionnaire .option-btn.active');if(!modeBtn){alert('Veuillez choisir un mode de récupération.');return;}
   let modeLabel='';if(modeBtn.dataset.type==='pickup')modeLabel='Venir sur place';else modeLabel='Livraison';
@@ -1062,21 +1314,23 @@ document.getElementById('submit-order-btn').onclick=()=>{
   message+=`\n💰 *Total : ${total} €*\n\n📦 *Mode :* ${modeLabel}\n`;
   if(modeBtn.dataset.type==='pickup'){const time=document.getElementById('pickup-time').value;if(time)message+=`\n🕐 Heure meet-up : ${time}`;}
   else if(modeBtn.dataset.type==='delivery'){const time=document.getElementById('delivery-time').value;const address=document.getElementById('delivery-address').value.trim();const details=document.getElementById('delivery-details').value.trim();if(time)message+=`\n🕐 Heure livraison : ${time}`;if(address)message+=`\n📍 Adresse : ${address}`;if(details)message+=`\n📝 Détails : ${details}`;}
+  if(rouletteWonPrize){message+=`\n\n🎡 *Lot gagné à la roulette :* ${rouletteWonPrize.icon||'🎁'} ${rouletteWonPrize.name||''}`;}
   message+=`\n\nMerci ! 🙏`;
-  commandes.push({tgName:tgUser?.first_name||'Invité',items:itemsText.trim(),total,mode:modeLabel,date:new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'})});saveCommandes();
+  commandes.push({tgName:tgUser?.first_name||'Invité',items:itemsText.trim(),total,mode:modeLabel,date:new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'}),prize:rouletteWonPrize?rouletteWonPrize.name:null});saveCommandes();
   const url=`https://t.me/HaribioContact?text=${encodeURIComponent(message)}`;if(tg)tg.openTelegramLink(url);else window.open(url,'_blank');
-};
+  rouletteWonPrize=null;
+}
 
 function renderProfilPage(){
   const page=document.getElementById('profil-page');
   const displayName=tgUser?(tgUser.first_name+(tgUser.last_name?' '+tgUser.last_name:'')):'Invité';
   const username=tgUser?.username?'@'+tgUser.username:'';const photoUrl=tgUser?.photo_url||'';
-  page.innerHTML=`<div class="profil-header"><div class="profil-avatar">${photoUrl?`<img src="${photoUrl}" alt="avatar">`:'<span>👤</span>'}</div><div class="profil-name">${displayName}</div>${username?`<div style="color:#3a2010;font-size:0.78rem;margin-top:2px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;">${username}</div>`:''} ${tgUser?.id?`<div style="color:#2a1008;font-size:0.68rem;margin-top:3px;font-family:'Barlow Condensed',sans-serif;">ID Telegram: ${tgUser.id}</div>`:''}</div><div class="profil-stats-block"><div class="profil-stats-icon">📦</div><div><div class="profil-stats-number">${commandes.length}</div><div class="profil-stats-label">commande(s) passée(s)</div></div></div><div class="profil-section-title">📦 Mes commandes</div><div id="profil-commandes">${commandes.length===0?'<p style="color:#3a2010;text-align:center;padding:20px;font-size:0.88rem;font-weight:700;font-family:\'Barlow Condensed\',sans-serif;letter-spacing:0.5px;">Aucune commande pour l\'instant.</p>':[...commandes].reverse().map(c=>`<div class="commande-card"><div class="commande-header"><span class="commande-date">${c.date}</span><span class="commande-total">${c.total} €</span></div><div class="commande-items">${c.items}</div><span class="commande-mode">${c.mode}</span></div>`).join('')}</div>`;
+  page.innerHTML=`<div class="profil-header"><div class="profil-avatar">${photoUrl?`<img src="${photoUrl}" alt="avatar">`:'<span>👤</span>'}</div><div class="profil-name">${displayName}</div>${username?`<div style="color:#3a2010;font-size:0.78rem;margin-top:2px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;">${username}</div>`:''} ${tgUser?.id?`<div style="color:#2a1008;font-size:0.68rem;margin-top:3px;font-family:'Barlow Condensed',sans-serif;">ID Telegram: ${tgUser.id}</div>`:''}</div><div class="profil-stats-block"><div class="profil-stats-icon">📦</div><div><div class="profil-stats-number">${commandes.length}</div><div class="profil-stats-label">commande(s) passée(s)</div></div></div><div class="profil-section-title">📦 Mes commandes</div><div id="profil-commandes">${commandes.length===0?'<p style="color:#3a2010;text-align:center;padding:20px;font-size:0.88rem;font-weight:700;font-family:\'Barlow Condensed\',sans-serif;letter-spacing:0.5px;">Aucune commande pour l\'instant.</p>':[...commandes].reverse().map(c=>`<div class="commande-card"><div class="commande-header"><span class="commande-date">${c.date}</span><span class="commande-total">${c.total} €</span></div><div class="commande-items">${c.items}</div><span class="commande-mode">${c.mode}</span>${c.prize?`<span class="commande-mode" style="background:rgba(255,215,0,0.08);border-color:rgba(255,215,0,0.2);color:var(--orange);margin-left:6px;">🎁 ${c.prize}</span>`:''}</div>`).join('')}</div>`;
 }
 
 document.querySelectorAll('.reseau-item[data-link]').forEach(el=>{el.onclick=()=>{const l=el.getAttribute('data-link');if(tg)tg.openLink(l);else window.open(l,'_blank');};});
 
-const ADMIN_PIN = '0987';
+const ADMIN_PIN = '0285';
 let adminTapCount=0;let adminTapTimer=null;
 document.getElementById('admin-trigger').addEventListener('click',()=>{adminTapCount++;clearTimeout(adminTapTimer);adminTapTimer=setTimeout(()=>{adminTapCount=0;},1200);if(adminTapCount>=5){adminTapCount=0;openAdminLogin();}});
 
@@ -1086,7 +1340,7 @@ function closeAdminLogin(){document.getElementById('admin-login').classList.remo
 function updatePinDots(){for(let i=0;i<4;i++){document.getElementById('dot-'+i).classList.toggle('filled',i<currentPin.length);}}
 document.querySelectorAll('.kp-btn').forEach(btn=>{btn.addEventListener('click',()=>{const v=btn.dataset.v;if(v==='del'){currentPin=currentPin.slice(0,-1);updatePinDots();return;}if(v==='enter'){checkPin();return;}if(currentPin.length<4){currentPin+=v;updatePinDots();}if(currentPin.length===4)setTimeout(checkPin,150);});});
 function checkPin(){if(currentPin===ADMIN_PIN){closeAdminLogin();openAdmin();}else{document.getElementById('pin-error').style.display='block';currentPin='';updatePinDots();setTimeout(()=>{document.getElementById('pin-error').style.display='none';},2000);}}
-function openAdmin(){renderAdminProductsList();renderAdminReseauxList();renderAdminInfoCardsList();closeAdminForm();closeReseauForm();closeInfoCardForm();document.getElementById('admin-overlay').classList.add('open');}
+function openAdmin(){renderAdminProductsList();renderAdminReseauxList();renderAdminInfoCardsList();renderAdminPrizesList();closeAdminForm();closeReseauForm();closeInfoCardForm();closePrizeForm();document.getElementById('admin-overlay').classList.add('open');}
 function closeAdmin(){document.getElementById('admin-overlay').classList.remove('open');}
 
 function renderAdminReseauxList(){
@@ -1194,6 +1448,64 @@ async function deleteInfoCard(key){
   catch(e){console.error(e);showAdminToast('❌ Erreur de synchronisation');}
 }
 window.openInfoCardForm=openInfoCardForm;window.closeInfoCardForm=closeInfoCardForm;window.saveInfoCard=saveInfoCard;window.deleteInfoCard=deleteInfoCard;
+
+// --- Admin : gestion des lots de la roulette ---
+function renderAdminPrizesList(){
+  const list=document.getElementById('admin-prizes-list');if(!list)return;
+  const items=Object.values(roulettePrizes);list.innerHTML='';
+  if(!items.length){list.innerHTML='<p style="color:#3a2010;text-align:center;padding:20px;font-weight:700;font-family:var(--font-body);">Aucun lot. Ajoute ton premier lot ci-dessus 🎁</p>';return;}
+  items.forEach(p=>{
+    const div=document.createElement('div');div.className='admin-product-card';
+    const isActive=p.active!==false;
+    div.innerHTML=`<div class="admin-product-name"><span class="admin-prize-color-dot" style="background:${p.color||'#e63200'}"></span>${p.icon||'🎁'} ${p.name||''}</div><div class="admin-product-farm">${isActive?'✅ Actif — inclus dans le tirage':'⛔ Désactivé'}</div><div class="admin-product-actions"><button class="btn-edit" onclick="openPrizeForm('${p.key}')">✏️ Modifier</button><button class="btn-toggle-active" onclick="togglePrizeActive('${p.key}')">${isActive?'⛔ Désactiver':'✅ Activer'}</button><button class="btn-delete" onclick="deletePrize('${p.key}')">🗑️</button></div>`;
+    list.appendChild(div);
+  });
+}
+function openPrizeForm(key){
+  const section=document.getElementById('admin-prize-form-section');section.style.display='block';section.scrollIntoView({behavior:'smooth'});
+  document.getElementById('pf-edit-key').value=key||'';
+  if(key){
+    document.getElementById('admin-prize-form-title').textContent='✏️ Modifier le lot';
+    const p=roulettePrizes[key];
+    document.getElementById('pf-icon').value=p.icon||'';
+    document.getElementById('pf-name').value=p.name||'';
+    document.getElementById('pf-color').value=p.color||'#e63200';
+  }else{
+    document.getElementById('admin-prize-form-title').textContent='➕ Nouveau lot';
+    document.getElementById('pf-icon').value='';
+    document.getElementById('pf-name').value='';
+    document.getElementById('pf-color').value='#e63200';
+  }
+}
+function closePrizeForm(){document.getElementById('admin-prize-form-section').style.display='none';}
+async function savePrize(){
+  const key=document.getElementById('pf-edit-key').value;
+  const icon=document.getElementById('pf-icon').value.trim();
+  const name=document.getElementById('pf-name').value.trim();
+  const color=document.getElementById('pf-color').value;
+  if(!name){alert('⚠️ Le nom du lot est obligatoire !');return;}
+  const active=(key&&roulettePrizes[key])?(roulettePrizes[key].active!==false):true;
+  const saveKey=key||('prize_'+Date.now());
+  const saveBtn=document.querySelector('#admin-prize-form-section .btn-save');if(saveBtn){saveBtn.disabled=true;saveBtn.textContent='Sauvegarde...';}
+  try{
+    await fsSavePrize(saveKey,{icon,name,color,active});
+    closePrizeForm();showAdminToast('✅ Lot sauvegardé !');
+  }catch(e){console.error(e);alert('❌ Erreur lors de la sauvegarde. Vérifiez votre connexion.');}
+  finally{if(saveBtn){saveBtn.disabled=false;saveBtn.innerHTML='💾 Sauvegarder';}}
+}
+async function togglePrizeActive(key){
+  const p=roulettePrizes[key];if(!p)return;
+  try{
+    await fsSavePrize(key, {...p, active: p.active===false});
+    showAdminToast(p.active===false?'✅ Lot activé':'⛔ Lot désactivé');
+  }catch(e){console.error(e);showAdminToast('❌ Erreur de synchronisation');}
+}
+async function deletePrize(key){
+  if(!confirm('Supprimer ce lot ?'))return;
+  try{await fsDeletePrize(key);showAdminToast('🗑️ Lot supprimé');}
+  catch(e){console.error(e);showAdminToast('❌ Erreur de synchronisation');}
+}
+window.openPrizeForm=openPrizeForm;window.closePrizeForm=closePrizeForm;window.savePrize=savePrize;window.togglePrizeActive=togglePrizeActive;window.deletePrize=deletePrize;
 
 function renderAdminProductsList(){
   const list=document.getElementById('admin-products-list');const all=products;list.innerHTML='';
