@@ -809,15 +809,8 @@ async function fsDeleteReseau(key){
   await window._fsDel(window._fsDoc(window._db, 'reseaux', key));
 }
 async function seedReseauxIfEmpty(snap){
-  if(!snap.empty || reseauxSeeded) return;
-  reseauxSeeded = true;
-  const defaults = [
-    {name:'Contact Potato', sub:'Contact direct 📩', icon:'🥔', link:'https://tato.im/JohnLennon33', order:1},
-    {name:'Notre Potato', sub:'Canal officiel 📢', icon:'🥔', link:'https://tato.im/haribio64', order:2},
-    {name:'Canal retour/client', sub:'SAV & retours ✅', icon:'🥔', link:'https://tato.im/haribio64Pau', order:3},
-    {name:'Notre Telegram', sub:'Annonces & updates 📢', icon:'https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Telegram_logo.svg/512px-Telegram_logo.svg.png', link:'https://t.me/CaliCorp64', order:4}
-  ];
-  for(const d of defaults){ try{ await fsSaveReseau('seed_'+d.order+'_'+Date.now(), d); }catch(e){console.error(e);} }
+  // Seed désactivé
+  return;
 }
 window.initReseauxRealtime = function(){
   try{
